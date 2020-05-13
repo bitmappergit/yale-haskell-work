@@ -1,0 +1,31 @@
+#!/usr/bin/env sbcl --script
+(sb-ext:unlock-package "CL")
+;(make-package "MUMBLE-IMPLEMENTATION" :use '("CL" "CL-USER"))
+(load "cl-support/cl-setup.lisp")
+(load "cl-support/cl-init.lisp")
+;;; Set various internal switches to appropriate values for running
+;;; Haskell code.
+(proclaim '(optimize (speed 3) (safety 0) (compilation-speed 0)))
+(setf *load-verbose* nil)
+;(setf compiler:*compile-verbose* nil)
+(in-package :mumble-user)
+(setf *printers* '(compiling loading))
+(setf *optimizers* '())
+(setf *compile-interface* '#f)
+(setf *code-chunk-size* 100)
+;;; Load the prelude.
+(compile/load *prelude-unit-filename*)
+;;; Set up the saved system.
+;;; AKCL doesn't have the new CL condition system, so define the
+;;; restart function using catch and throw.
+(define (haskell-toplevel)
+  (setf cl:*package* (cl:find-package :mumble-user))
+  (setf cl:*default-pathname-defaults* (cl:truename "./"))
+  (load-init-files)
+  (do () ('#f)
+    (cl:catch 'restart-haskell
+      (heval))))
+(define (restart-haskell)
+  (cl:throw 'restart-haskell '#f))
+
+(haskell-toplevel)

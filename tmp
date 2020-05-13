@@ -1,0 +1,7 @@
+(dotimes (i *num-saved-gtyvars*)
+  (setf (vector-ref *saved-gtyvar-varnames* i)
+  (string->symbol (format nil "SAVED-GTYVAR-NAME~A" i))))
+
+(dotimes (i *pre-defined-strictness-vars*)
+  (setf (vector-ref *pre-defined-strictness-names* i)
+	(string->symbol (format nil "SAVED-STRICTNESS-~A" i))))
